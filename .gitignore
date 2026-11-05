@@ -1,0 +1,82 @@
+# ==============================================================================
+# LocalAI Portable - .gitignore
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Downloadable Binary Assets (Retrieved via download_assets.ps1)
+# ------------------------------------------------------------------------------
+bin/llama/*
+!bin/llama/.gitkeep
+
+bin/vscode/*
+!bin/vscode/.gitkeep
+
+# ------------------------------------------------------------------------------
+# 2. Large AI Models (GGUF)
+# ------------------------------------------------------------------------------
+models/*
+!models/.gitkeep
+*.gguf
+
+# ------------------------------------------------------------------------------
+# 3. VS Code Extensions (Downloaded VSIX)
+# ------------------------------------------------------------------------------
+extensions_installer/*
+!extensions_installer/.gitkeep
+*.vsix
+
+# ------------------------------------------------------------------------------
+# 4. Runtime Data, Installed Extensions, and Caches
+# ------------------------------------------------------------------------------
+data/cli-data/
+data/server-data/
+data/extensions/
+
+# Preserve only essential configs in data/profile and data/user-data
+data/profile/*
+!data/profile/.continue/
+data/profile/.continue/*
+!data/profile/.continue/config.yaml
+
+data/user-data/*
+!data/user-data/User/
+data/user-data/User/*
+!data/user-data/User/settings.json
+
+# ------------------------------------------------------------------------------
+# 5. SSL Certificates & Private Keys (Security)
+# ------------------------------------------------------------------------------
+cert/*
+!cert/.gitkeep
+*.pfx
+*.cer
+*.crt
+*.key
+*.pem
+
+# ------------------------------------------------------------------------------
+# 6. Logs & Temporary Files
+# ------------------------------------------------------------------------------
+logs/*
+!logs/.gitkeep
+*.log
+_temp_downloads/
+*.tmp
+*.tmp.gz
+
+# ------------------------------------------------------------------------------
+# 7. Archives (Portable bundles)
+# ------------------------------------------------------------------------------
+*.zip
+*.7z
+*.rar
+*.tar.gz
+
+# ------------------------------------------------------------------------------
+# 8. OS & Editor Artifacts
+# ------------------------------------------------------------------------------
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.swp
+*~

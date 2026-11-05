@@ -1,0 +1,14 @@
+{
+  "telemetry.telemetryLevel": "off",
+  "update.mode": "none",
+  "update.showReleaseNotes": false,
+  "extensions.autoUpdate": false,
+  "extensions.autoCheckUpdates": false,
+  "extensions.ignoreRecommendations": true,
+  "workbench.enableExperiments": false,
+  "workbench.settings.enableNaturalLanguageSearch": false,
+  "npm.fetchOnlinePackageInfo": false,
+  "security.workspace.trust.enabled": false,
+  "files.autoSave": "onWindowChange",
+  "continue.enableTabAutocomplete": true
+}

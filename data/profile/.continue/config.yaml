@@ -1,0 +1,28 @@
+﻿name: Local Llama Config
+version: 0.1.0
+models:
+  - name: Qwen2.5-Coder-3B (Local CPU)
+    provider: openai
+    model: qwen2.5-coder-3b
+    apiBase: http://:/v1
+    apiKey: "EMPTY"
+    contextLength: 
+    roles:
+      - chat
+      - autocomplete
+      - edit
+      - apply
+    defaultCompletionOptions:
+      maxTokens: 4096
+      temperature: 0.2
+      topP: 0.95
+prompts:
+  - name: review
+    description: "コードレビュー"
+    prompt: "以下のコードをセキュリティ、可読性、パフォーマンスの観点から詳細にレビューし、具体的な改善コードを日本語で提示してください:\n\n{{{ input }}}"
+  - name: test
+    description: "単体テスト生成"
+    prompt: "以下のコードに対するユニットテスト（エッジケース含む）を記述してください:\n\n{{{ input }}}"
+  - name: doc
+    description: "ドキュメント生成"
+    prompt: "以下のコードの詳細なドキュメントコメント（JSDoc / Docstring等）を日本語で追記してください:\n\n{{{ input }}}"
