@@ -7,13 +7,17 @@
     - llama.cpp (AVX2 CPU release for Windows)
     - Continue Extension (.vsix)
     - Japanese Language Pack (.vsix)
-    - Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf
+    - Qwen2.5-Coder GGUF Models (3B & 1.5B)
+    - Portable Python 3.11 with Excel, CSV, Oracle, Postgres libraries
 .PARAMETER DryRun
     Tests the script logic and checks URLs without downloading large files.
+.PARAMETER SkipPython
+    Skips downloading and configuring the portable Python environment.
 #>
 
 param(
-    [switch]$DryRun
+    [switch]$DryRun,
+    [switch]$SkipPython
 )
 
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -233,6 +237,23 @@ if (!(Test-Path $modelPath15B)) {
     Download-FileWithProgress -Url $modelUrl15B -Destination $modelPath15B -Description "Qwen2.5-Coder-1.5B-Instruct-Q4_K_M.gguf"
 } else {
     Write-Host "1.5B Model file is already present: $modelPath15B" -ForegroundColor DarkGray
+}
+
+# ------------------------------------------------------------------------------
+# 6. Portable Python Environment (Excel, CSV, Oracle, PostgreSQL, Source Code)
+# ------------------------------------------------------------------------------
+if (!$SkipPython) {
+    Write-Host "`n--- [6/6] Setting up Portable Python Environment ---" -ForegroundColor Cyan
+    $setupPythonScript = Join-Path $RootDir "tools\setup_python.ps1"
+    if (Test-Path $setupPythonScript) {
+        $pythonArgs = @("-ExecutionPolicy", "Bypass", "-File", $setupPythonScript)
+        if ($DryRun) { $pythonArgs += "-DryRun" }
+        & powershell.exe $pythonArgs
+    } else {
+        Write-Host "  [WARNING] $setupPythonScript not found. Skipping." -ForegroundColor DarkYellow
+    }
+} else {
+    Write-Host "`n[6/6] Skipped Portable Python setup (-SkipPython specified)." -ForegroundColor DarkGray
 }
 
 # ------------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-﻿name: Local Llama Config
+name: Local Llama Config
 version: 0.1.0
 models:
   - name: Qwen2.5-Coder-3B (Local CPU)
@@ -26,3 +26,17 @@ prompts:
   - name: doc
     description: "ドキュメント生成"
     prompt: "以下のコードの詳細なドキュメントコメント（JSDoc / Docstring等）を日本語で追記してください:\n\n{{{ input }}}"
+  - name: script
+    description: "データ処理・自動化スクリプト作成 (Python/Excel/CSV/DB/Code)"
+    prompt: |
+      あなたは閉域環境で動作するPythonスクリプト開発エキスパートです。
+      本環境には以下のライブラリがセットアップ済みのポータブルPython（Windows x64）が用意されています:
+      - Excel: openpyxl, pandas, xlrd, xlsxwriter
+      - CSV / テキスト / ソースコード: pandas, chardet, charset-normalizer, rich, pygments
+      - データベース: oracledb (Thinモード: Oracle Client不要), psycopg2-binary (PostgreSQL), sqlalchemy
+
+      ユーザーの要求に基づき、この環境で即座に実行可能な堅牢なPythonスクリプトを作成してください。
+      外部インターネットへの接続は行わず、ファイルパスの扱い（pathlib推奨）、文字コード（CP932/UTF-8の自動判定または配慮）、エラーハンドリングを含めてください。
+
+      要求内容:
+      {{{ input }}}

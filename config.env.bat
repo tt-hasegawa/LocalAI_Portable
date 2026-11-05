@@ -44,6 +44,7 @@ rem --- Relative Paths ---
 set ROOT_DIR=%~dp0
 set BIN_LLAMA=%ROOT_DIR%bin\llama\llama-server.exe
 set BIN_VSCODE=%ROOT_DIR%bin\vscode\bin\code.cmd
+set BIN_PYTHON=%ROOT_DIR%bin\python\python.exe
 set MODELS_DIR=%ROOT_DIR%models
 set DATA_DIR=%ROOT_DIR%data
 set LOGS_DIR=%ROOT_DIR%logs

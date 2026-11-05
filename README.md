@@ -9,6 +9,7 @@
 - **Webブラウザのみで作業可能**: サーバー側で `code serve-web` をバックグラウンド実行し、自席PCや社内端末のブラウザから `http://<サーバーIP>:8000` で直接VS Codeを利用可能。
 - **GPU不要・CPU最適化**: `llama.cpp` の AVX2 ビルドと `Qwen2.5-Coder-7B-Instruct-Q4_K_M`（約4.68GB）を組み合わせ、CPUのみのサーバーでも高速にコード生成・補完を実行。
 - **完全自己完結型**: レジストリを汚さず、相対パス＆専用プロファイルで動作するため、フォルダごとコピー・移動するだけで動作。
+- **AI実行用Python環境を内包（Excel/CSV/DB/ソース操作）**: AI（Qwen-Coder）が直接触れないファイルやDBを操作する「手足」として、ポータブルPython 3.11を同梱。Excel（.xlsx/.xls）、CSV（Shift_JIS自動判別）、Oracle（Instant Client不要のThinモード）、PostgreSQL（libpq内包）に即使えるライブラリがセットアップ済み。
 - **ワンクリック起動・停止**: `start.bat` で llama-server と VS Code Web を連動起動、`stop.bat` で安全に一括停止。
 
 ---
@@ -33,10 +34,12 @@ LocalAI_Portable/
 │   └── README_client.txt       # クライアント配布用テキスト手順書
 │
 ├── cert/                       # SSL証明書格納場所（server.pfx, LocalAI_Server.cer 等）
-├── tools/                      # 内部ツール（https_proxy.js, generate_cert.ps1 等）
+├── tools/                      # 内部ツール（https_proxy.js, generate_cert.ps1, setup_python.ps1 等）
+│   └── scripts/                # AI・自動化用サンプルスクリプト（Excel/CSV, Oracle Thin, Postgres, Code）
 ├── bin/
 │   ├── llama/                  # llama-server.exe 等のバイナリ一式
-│   └── vscode/                 # VS Code ポータブル版（code.cmd 等）
+│   ├── vscode/                 # VS Code ポータブル版（code.cmd 等）
+│   └── python/                 # ポータブルPython 3.11（Excel/CSV/DB/Code操作ライブラリ導入済）
 │
 ├── data/                       # ポータブルデータ（全状態・設定をここに集約）
 │   ├── profile/
@@ -68,6 +71,7 @@ LocalAI_Portable/
    - Continue 拡張機能 (`continue.vsix`) と 日本語パックの取得
    - `Qwen2.5-Coder-7B-Instruct-Q4_K_M.gguf` (約4.68GB) のダウンロード
    - 拡張機能のポータブル環境への事前インストール (`install_extensions.bat` 自動実行)
+   - ポータブルPython環境の構築と主要ライブラリ（openpyxl, pandas, oracledb, psycopg2-binary, sqlalchemy等）の事前導入 (`tools\setup_python.ps1` 自動実行)
 
 > [!NOTE]
 > 手動でダウンロードする場合は、各資材を上記のフォルダ構成図に合わせて配置してください。
@@ -232,3 +236,61 @@ VS Code Web 上で Continue 拡張機能のチャット画面を動かすには�
    - `https://<サーバー名>:8443/` にアクセスします。
    - **自己署名証明書の場合**: 初回はブラウザの赤い警告が出ます。公開証明書 `cert\LocalAI_Server.cer` をクライアントPCに配布し、`client_setup\install_server_cert.bat` を管理者実行して「信頼されたルート証明機関」に登録すれば、警告が消えて緑の鍵マークになります。
    - **社内CA発行の証明書がある場合**: 会社の公式証明書（`server.crt` + `server.key`、または `server.pfx`）を `cert\` フォルダに配置するだけで、全社内PCから警告なしで即座にアクセスできます。
+
+---
+
+## 10. AI実行用ポータブルPython環境（手足としてのスクリプト実行）
+
+AI（Qwen-Coder）はLLMであるため、ファイルシステムやデータベースを直接操作できません。
+そこで、**AIにPythonスクリプトを生成させ、サーバー上のポータブルPythonで実行させることで「手足」として機能** させます。
+
+本パッケージには、閉域環境のサーバー上にPythonやDBドライバが存在しなくても動作するよう、**自己完結型のポータブルPython 3.11** と主要ライブラリ群（約230MB）が `bin/python` に標準バンドルされています。
+
+### 同梱ライブラリ一覧
+
+| 対象カテゴリ | 導入済みライブラリ | 特徴・メリット |
+| :--- | :--- | :--- |
+| **Excel 操作** | `openpyxl`, `pandas`, `xlrd`, `xlsxwriter` | `.xlsx`（書式・数式対応）およびレガシーな `.xls` の読み込み、高速出力に対応。 |
+| **CSV / テキスト** | `pandas`, `chardet`, `charset-normalizer` | 日本の社内システム特有の **Shift_JIS (CP932)** と **UTF-8** を自動判別し、文字化けなく読み書き可能。 |
+| **ソースコード処理** | `pygments`, `rich`, `re`, `pathlib`, `ast` | 複数言語（Java, C#, C++, SQL, JS等）のコード解析、シンタックス処理、コンソール整形表示。 |
+| **Oracle Database** | `oracledb` | **Thinモード対応（重要）**。**Oracle Instant Client や Oracle Client のインストールが一切不要**！純粋なネットワーク通信だけで Oracle 12c〜23c に即座に接続可能。 |
+| **PostgreSQL** | `psycopg2-binary` | PostgreSQL接続ドライバ。libpq等もバイナリ内包済みで、追加のDLL導入なしに即動作。 |
+| **共通DB / ORM** | `sqlalchemy` | Oracle, PostgreSQL, SQLite 等を共通のSQL構文やORMで抽象化。`df.to_sql()` や `pd.read_sql()` でExcel/CSVとの相互変換が数行で完結。 |
+
+### 使い方・AI（Continue）との連携
+
+1. **Continue チャットでの指示**:
+   - チャット欄でスラッシュコマンド `/script` を入力するか、通常プロンプトで「○○のExcelからデータを取り出してPostgreSQLに格納するPythonコードを書いて」と依頼します。
+   - Continue側には本環境のライブラリ（`openpyxl`, `oracledb` Thinモード, `psycopg2` 等）を前提としたプロンプトテンプレートが事前登録されているため、環境に完全に合致したスクリプトが生成されます。
+
+2. **ターミナルでの即座実行**:
+   - `start.bat` 起動時に `bin/python` が環境変数 `PATH` に自動追加されるため、VS Code Web 下部のターミナルから以下のようにそのまま実行できます:
+     ```bash
+     python myscript.py
+     ```
+
+### 同梱サンプルスクリプト（`tools/scripts/`）
+
+AIへのプロンプト指示の参考や、単体CLIツールとして活用できるベストプラクティス実装を同梱しています:
+
+- `excel_csv_tool.py`:
+  - Excel ⇄ CSV 相互変換、文字コード自動判別（CP932 / UTF-8）、先頭行プレビュー表示
+  ```bash
+  python tools/scripts/excel_csv_tool.py input.xlsx output.csv
+  python tools/scripts/excel_csv_tool.py data.csv --preview
+  ```
+- `oracle_thin_query.py`:
+  - **Oracle Client 不要** で Oracle DB に接続し、SQLクエリ結果を CSV や Excel にエクスポート
+  ```bash
+  python tools/scripts/oracle_thin_query.py --host 192.168.1.50 --service ORCLPDB1 --user scott --password tiger --sql "SELECT * FROM emp" --output emp.xlsx
+  ```
+- `postgres_query.py`:
+  - PostgreSQL に接続し、SQLクエリ結果を CSV や Excel にエクスポート
+  ```bash
+  python tools/scripts/postgres_query.py --host 192.168.1.50 --dbname mydb --user postgres --password secret --sql "SELECT * FROM users" --output users.csv
+  ```
+- `code_search_replace.py`:
+  - 複数言語のソースコードファイルを再帰探索し、文字コードを保持しながら一括検索・置換
+  ```bash
+  python tools/scripts/code_search_replace.py C:\source\myproject --search "oldApi()" --replace "newApi()" --ext .java .cs
+  ```

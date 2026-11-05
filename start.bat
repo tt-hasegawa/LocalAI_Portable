@@ -57,7 +57,7 @@ if exist "%CONTINUE_GLOBAL_DIR%\config.yaml" (
 )
 
 rem --- Add local DLL paths to system PATH for node.exe and extensions ---
-set PATH=%ROOT_DIR%bin\llama;%ROOT_DIR%bin\vscode;%PATH%
+set PATH=%ROOT_DIR%bin\python;%ROOT_DIR%bin\python\Scripts;%ROOT_DIR%bin\llama;%ROOT_DIR%bin\vscode;%PATH%
 
 rem --- Verify required files ---
 if not exist "%BIN_LLAMA%" (
@@ -116,6 +116,7 @@ echo   - Context Length   : %CTX_SIZE% tokens
 echo   - Model File       : %MODEL_NAME%
 echo   - llama-server     : http://%LLAMA_HOST%:%LLAMA_PORT%
 echo   - VS Code Web Port : %VSCODE_PORT%
+if exist "%BIN_PYTHON%" echo   - Portable Python  : Ready (Excel, CSV, Oracle, Postgres)
 if "%ENABLE_HTTPS%"=="1" echo   - HTTPS Port       : %HTTPS_PORT% (SSL Reverse Proxy Active)
 if not "%TARGET_FOLDER%"=="" echo   - Default Folder   : %TARGET_FOLDER%
 echo ==============================================================================

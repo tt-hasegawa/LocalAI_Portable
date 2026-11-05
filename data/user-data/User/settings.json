@@ -10,5 +10,6 @@
   "npm.fetchOnlinePackageInfo": false,
   "security.workspace.trust.enabled": false,
   "files.autoSave": "onWindowChange",
-  "continue.enableTabAutocomplete": true
+  "continue.enableTabAutocomplete": true,
+  "terminal.integrated.defaultProfile.windows": "Command Prompt"
 }
