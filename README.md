@@ -26,6 +26,7 @@ LocalAI_Portable/
 ├── config.env.bat              # 環境設定（ポート番号、HTTPS設定、モデル指定等）
 ├── install_extensions.bat      # VSIXオフライン一括インストールバッチ
 ├── download_assets.ps1         # [オンライン用] 資材一括ダウンロード＆自動セットアップ
+├── download_assets_legacy.ps1  # [Win2016用] WinPTY対応レガシーVS Code(v1.108)一括ダウンロード
 ├── README.md                   # 本マニュアル
 │
 ├── client_setup/               # クライアントPC向け簡単設定ツール一式
@@ -63,7 +64,12 @@ LocalAI_Portable/
 2. PowerShell を管理者（または通常権限）で開き、以下のスクリプトを実行します:
    ```powershell
    cd LocalAI_Portable
+   # 通常環境（Windows Server 2019/2022、Windows 10/11 等）:
    powershell -ExecutionPolicy Bypass -File .\download_assets.ps1
+
+   # Windows Server 2016 環境（WinPTY対応レガシー VS Code v1.108 を使用する場合）:
+   # ※VS Code v1.109以降はConPTY必須となりServer 2016でターミナルが起動しないため
+   powershell -ExecutionPolicy Bypass -File .\download_assets_legacy.ps1
    ```
    *スクリプトが以下の作業を自動で行います:*
    - VS Code ポータブル版 zip のダウンロードと `bin\vscode` への展開

@@ -23,13 +23,19 @@ rem --- llama-server CPU Inference Parameters ---
 rem Number of CPU threads (Set to 0 to auto-detect physical CPU cores)
 set CPU_THREADS=0
 
-rem Context size in tokens (Default: 16384 for code inspection, 8192 if memory permits)
+rem Context size in tokens (Default: 16384 for code inspection, 8192 or 4096 if memory permits)
 set CTX_SIZE=16384
 
 rem Model file name inside the models/ directory:
-rem   - Standard (RAM 16GB+): Qwen2.5-Coder-3B-Instruct-Q4_K_M.gguf
-rem   - Lightweight (RAM 8GB): Qwen2.5-Coder-1.5B-Instruct-Q4_K_M.gguf
+rem   [Code-Specialized Models]
+rem   - Qwen2.5-Coder 3B (RAM 2.5-3.5GB) : Qwen2.5-Coder-3B-Instruct-Q4_K_M.gguf (Default)
+rem   - Qwen2.5-Coder 1.5B (RAM 1.5-2.0GB): Qwen2.5-Coder-1.5B-Instruct-Q4_K_M.gguf
+rem   [Ultra-Lightweight / General & Coding (<2GB RAM)]
+rem   - Gemma-2-2B-IT (RAM 1.8-2.3GB)    : gemma-2-2b-it-Q4_K_M.gguf
+rem   - Llama-3.2-1B-IT (RAM 1.2-1.5GB)  : Llama-3.2-1B-Instruct-Q4_K_M.gguf
 set MODEL_NAME=Qwen2.5-Coder-3B-Instruct-Q4_K_M.gguf
+rem set MODEL_NAME=gemma-2-2b-it-Q4_K_M.gguf
+rem set MODEL_NAME=Llama-3.2-1B-Instruct-Q4_K_M.gguf
 rem set MODEL_NAME=Qwen2.5-Coder-1.5B-Instruct-Q4_K_M.gguf
 
 rem Batch size for CPU inference

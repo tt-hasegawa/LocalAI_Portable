@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     LocalAI Portable - Assets Downloader and Setup Script
 .DESCRIPTION
@@ -7,17 +7,25 @@
     - llama.cpp (AVX2 CPU release for Windows)
     - Continue Extension (.vsix)
     - Japanese Language Pack (.vsix)
-    - Qwen2.5-Coder GGUF Models (3B & 1.5B)
+    - LLM GGUF Models:
+      * Qwen2.5-Coder-3B-Instruct (Standard Code, ~1.96 GB)
+      * Qwen2.5-Coder-1.5B-Instruct (Lightweight Code, ~1.04 GB)
+      * Llama-3.2-1B-Instruct (Ultra-Lightweight <2GB RAM, ~0.81 GB)
+      * Gemma-2-2B-IT (High Performance <2GB RAM, ~1.71 GB)
     - Portable Python 3.11 with Excel, CSV, Oracle, Postgres libraries
 .PARAMETER DryRun
     Tests the script logic and checks URLs without downloading large files.
 .PARAMETER SkipPython
     Skips downloading and configuring the portable Python environment.
+.PARAMETER Models
+    Specifies which models to download: 'All' (default), 'Qwen3B', 'Qwen15B', 'Llama1B', 'Gemma2B'.
 #>
 
 param(
     [switch]$DryRun,
-    [switch]$SkipPython
+    [switch]$SkipPython,
+    [ValidateSet("All", "Qwen3B", "Qwen15B", "Llama1B", "Gemma2B")]
+    [string]$Models = "All"
 )
 
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -217,26 +225,48 @@ if (!(Test-Path $jaVsix)) {
 }
 
 # ------------------------------------------------------------------------------
-# 5. Qwen2.5-Coder Models (3B Standard & 1.5B Lightweight for <= 8GB RAM)
+# 5. LLM Models in GGUF Format
 # ------------------------------------------------------------------------------
-$modelPath3B = Join-Path $ModelsDir "Qwen2.5-Coder-3B-Instruct-Q4_K_M.gguf"
-if (!(Test-Path $modelPath3B)) {
-    Write-Host "`n--- [5/5] Downloading Qwen2.5-Coder-3B-Instruct-Q4_K_M.gguf ---" -ForegroundColor Cyan
-    Write-Host "  File size is approximately 1.96 GB. Downloading..." -ForegroundColor Yellow
-    $modelUrl3B = "https://huggingface.co/Qwen/Qwen2.5-Coder-3B-Instruct-GGUF/resolve/main/qwen2.5-coder-3b-instruct-q4_k_m.gguf"
-    Download-FileWithProgress -Url $modelUrl3B -Destination $modelPath3B -Description "Qwen2.5-Coder-3B-Instruct-Q4_K_M.gguf"
-} else {
-    Write-Host "`n[5/5] 3B Model file is already present: $modelPath3B" -ForegroundColor DarkGray
-}
+$modelTargets = @(
+    @{
+        Key = "Qwen3B"
+        FileName = "Qwen2.5-Coder-3B-Instruct-Q4_K_M.gguf"
+        Url = "https://huggingface.co/Qwen/Qwen2.5-Coder-3B-Instruct-GGUF/resolve/main/qwen2.5-coder-3b-instruct-q4_k_m.gguf"
+        Description = "Qwen2.5-Coder-3B-Instruct-Q4_K_M (Code Standard, ~1.96 GB)"
+    },
+    @{
+        Key = "Qwen15B"
+        FileName = "Qwen2.5-Coder-1.5B-Instruct-Q4_K_M.gguf"
+        Url = "https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF/resolve/main/qwen2.5-coder-1.5b-instruct-q4_k_m.gguf"
+        Description = "Qwen2.5-Coder-1.5B-Instruct-Q4_K_M (Code Lightweight, ~1.04 GB)"
+    },
+    @{
+        Key = "Llama1B"
+        FileName = "Llama-3.2-1B-Instruct-Q4_K_M.gguf"
+        Url = "https://huggingface.co/bartowski/Llama-3.2-1B-Instruct-GGUF/resolve/main/Llama-3.2-1B-Instruct-Q4_K_M.gguf"
+        Description = "Llama-3.2-1B-Instruct-Q4_K_M (Ultra Lightweight <2GB RAM, ~0.81 GB)"
+    },
+    @{
+        Key = "Gemma2B"
+        FileName = "gemma-2-2b-it-Q4_K_M.gguf"
+        Url = "https://huggingface.co/bartowski/gemma-2-2b-it-GGUF/resolve/main/gemma-2-2b-it-Q4_K_M.gguf"
+        Description = "Gemma-2-2B-IT-Q4_K_M (High Performance <2GB RAM, ~1.71 GB)"
+    }
+)
 
-$modelPath15B = Join-Path $ModelsDir "Qwen2.5-Coder-1.5B-Instruct-Q4_K_M.gguf"
-if (!(Test-Path $modelPath15B)) {
-    Write-Host "`n--- Downloading Qwen2.5-Coder-1.5B-Instruct-Q4_K_M.gguf (Lightweight) ---" -ForegroundColor Cyan
-    Write-Host "  File size is approximately 1.04 GB. Downloading..." -ForegroundColor Yellow
-    $modelUrl15B = "https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF/resolve/main/qwen2.5-coder-1.5b-instruct-q4_k_m.gguf"
-    Download-FileWithProgress -Url $modelUrl15B -Destination $modelPath15B -Description "Qwen2.5-Coder-1.5B-Instruct-Q4_K_M.gguf"
-} else {
-    Write-Host "1.5B Model file is already present: $modelPath15B" -ForegroundColor DarkGray
+Write-Host "`n--- [5/6] Checking / Downloading LLM GGUF Models ---" -ForegroundColor Cyan
+foreach ($m in $modelTargets) {
+    if ($Models -ne "All" -and $Models -ne $m.Key) {
+        continue
+    }
+
+    $destPath = Join-Path $ModelsDir $m.FileName
+    if (!(Test-Path $destPath)) {
+        Write-Host "`n  [Model Download] $($m.Description)..." -ForegroundColor Yellow
+        Download-FileWithProgress -Url $m.Url -Destination $destPath -Description $m.FileName
+    } else {
+        Write-Host "  [Ready] Model file is already present: $($m.FileName)" -ForegroundColor DarkGray
+    }
 }
 
 # ------------------------------------------------------------------------------

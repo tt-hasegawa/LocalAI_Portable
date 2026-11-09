@@ -4,9 +4,54 @@ models:
   - name: Qwen2.5-Coder-3B (Local CPU)
     provider: openai
     model: qwen2.5-coder-3b
-    apiBase: http://:/v1
+    apiBase: http://127.0.0.1:58080/v1
     apiKey: "EMPTY"
-    contextLength: 
+    contextLength: 16384
+    roles:
+      - chat
+      - autocomplete
+      - edit
+      - apply
+    defaultCompletionOptions:
+      maxTokens: 4096
+      temperature: 0.2
+      topP: 0.95
+  - name: Gemma-2-2B-IT (Local CPU)
+    provider: openai
+    model: gemma-2-2b-it
+    apiBase: http://127.0.0.1:58080/v1
+    apiKey: "EMPTY"
+    contextLength: 8192
+    roles:
+      - chat
+      - autocomplete
+      - edit
+      - apply
+    defaultCompletionOptions:
+      maxTokens: 4096
+      temperature: 0.2
+      topP: 0.95
+  - name: Llama-3.2-1B-Instruct (Local CPU)
+    provider: openai
+    model: llama-3.2-1b-instruct
+    apiBase: http://127.0.0.1:58080/v1
+    apiKey: "EMPTY"
+    contextLength: 8192
+    roles:
+      - chat
+      - autocomplete
+      - edit
+      - apply
+    defaultCompletionOptions:
+      maxTokens: 4096
+      temperature: 0.2
+      topP: 0.95
+  - name: Qwen2.5-Coder-1.5B (Local CPU)
+    provider: openai
+    model: qwen2.5-coder-1.5b
+    apiBase: http://127.0.0.1:58080/v1
+    apiKey: "EMPTY"
+    contextLength: 16384
     roles:
       - chat
       - autocomplete

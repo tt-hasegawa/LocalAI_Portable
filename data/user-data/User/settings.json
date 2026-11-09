@@ -11,5 +11,6 @@
   "security.workspace.trust.enabled": false,
   "files.autoSave": "onWindowChange",
   "continue.enableTabAutocomplete": true,
-  "terminal.integrated.defaultProfile.windows": "Command Prompt"
+  "terminal.integrated.defaultProfile.windows": "Command Prompt",
+  "terminal.integrated.windowsUseConptyDll": true
 }

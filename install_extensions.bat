@@ -11,13 +11,13 @@ echo ===========================================================================
 if not exist "%BIN_VSCODE%" (
     echo [ERROR] VS Code executable not found: %BIN_VSCODE%
     echo Please make sure VS Code is extracted in bin\vscode\ folder.
-    pause
+    if not "%~1"=="--no-pause" pause
     exit /b 1
 )
 
 if not exist "%EXT_INSTALLER_DIR%" (
     echo [ERROR] Extension directory not found: %EXT_INSTALLER_DIR%
-    pause
+    if not "%~1"=="--no-pause" pause
     exit /b 1
 )
 
@@ -47,4 +47,5 @@ echo ===========================================================================
 echo [SUCCESS] Extension installation finished. Total installed: !COUNT!
 echo ==============================================================================
 echo.
+if "%~1"=="--no-pause" exit /b 0
 pause

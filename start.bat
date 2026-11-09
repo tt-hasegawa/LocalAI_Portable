@@ -51,9 +51,12 @@ if "!TARGET_FOLDER!"=="" set TARGET_FOLDER=%DEFAULT_FOLDER%
 rem --- Explicitly pin Continue global directory to portable folder ---
 set CONTINUE_GLOBAL_DIR=%DATA_DIR%\profile\.continue
 
-rem --- Synchronize port and context length into Continue config.yaml ---
+rem --- Synchronize port and context length into Continue config.yaml and config.json ---
 if exist "%CONTINUE_GLOBAL_DIR%\config.yaml" (
-    powershell -NoProfile -Command "$cfgPath = '%CONTINUE_GLOBAL_DIR%\config.yaml'; if (Test-Path $cfgPath) { $raw = [System.IO.File]::ReadAllText($cfgPath, [System.Text.Encoding]::UTF8); $updated = $raw -replace 'http://127\.0\.0\.1:\d+/v1', ('http://' + $env:LLAMA_HOST + ':' + $env:LLAMA_PORT + '/v1') -replace 'contextLength:\s*\d+', ('contextLength: ' + $env:CTX_SIZE); if ($raw -ne $updated) { [System.IO.File]::WriteAllText($cfgPath, $updated, [System.Text.Encoding]::UTF8) } }" >nul 2>nul
+    powershell -NoProfile -Command "$cfgPath = '%CONTINUE_GLOBAL_DIR%\config.yaml'; if (Test-Path $cfgPath) { $raw = [System.IO.File]::ReadAllText($cfgPath, [System.Text.Encoding]::UTF8); $updated = $raw -replace 'http://[^/\s""''\r\n]+/v1', ('http://' + $env:LLAMA_HOST + ':' + $env:LLAMA_PORT + '/v1') -replace 'contextLength:\s*\d*', ('contextLength: ' + $env:CTX_SIZE); if ($raw -ne $updated) { [System.IO.File]::WriteAllText($cfgPath, $updated, [System.Text.Encoding]::UTF8) } }" >nul 2>nul
+)
+if exist "%CONTINUE_GLOBAL_DIR%\config.json" (
+    powershell -NoProfile -Command "$cfgPath = '%CONTINUE_GLOBAL_DIR%\config.json'; if (Test-Path $cfgPath) { $raw = [System.IO.File]::ReadAllText($cfgPath, [System.Text.Encoding]::UTF8); $updated = $raw -replace 'http://[^/\s""''\r\n]+/v1', ('http://' + $env:LLAMA_HOST + ':' + $env:LLAMA_PORT + '/v1'); if ($raw -ne $updated) { [System.IO.File]::WriteAllText($cfgPath, $updated, [System.Text.Encoding]::UTF8) } }" >nul 2>nul
 )
 
 rem --- Add local DLL paths to system PATH for node.exe and extensions ---
@@ -152,6 +155,15 @@ if !WAIT_COUNT! GEQ 60 (
 goto HEALTH_LOOP
 
 :START_VSCODE
+rem --- Ensure VS Code and Proxy ports are free from stale processes ---
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$c1 = Get-NetTCPConnection -LocalPort %VSCODE_PORT% -ErrorAction SilentlyContinue; $c2 = if ('%ENABLE_HTTPS%' -eq '1') { Get-NetTCPConnection -LocalPort %HTTPS_PORT% -ErrorAction SilentlyContinue } else { $null }; if ($c1 -or $c2) { exit 1 } else { exit 0 }" >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo [INFO] Detected stale port bindings from a previous session. Cleaning up...
+    if exist "%ROOT_DIR%tools\stop_services.ps1" (
+        powershell -NoProfile -ExecutionPolicy Bypass -File "%ROOT_DIR%tools\stop_services.ps1" -RootDir "%ROOT_DIR%." -VscodePort %VSCODE_PORT% -HttpsPort %HTTPS_PORT% -LlamaPort 0 -Quiet
+    )
+)
+
 rem --- Start HTTPS Reverse Proxy if enabled ---
 if not "%ENABLE_HTTPS%"=="1" goto SKIP_START_HTTPS
 echo.
